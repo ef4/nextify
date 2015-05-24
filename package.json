@@ -1,0 +1,17 @@
+{
+  "name": "nextify",
+  "version": "1.0.0",
+  "description": "",
+  "main": "fat-arrowize.js",
+  "scripts": {
+    "test": "mocha -r tests/setup tests"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "babel": "^5.4.7",
+    "chai": "^2.3.0",
+    "dirty-chai": "git://github.com/prodatakey/dirty-chai#2ef8f0006c6c12ccf5b6b83dcb9b228024a69792",
+    "mocha": "^2.2.5"
+  }
+}
