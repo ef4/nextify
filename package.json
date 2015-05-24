@@ -1,13 +1,14 @@
 {
   "name": "nextify",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "",
-  "main": "fat-arrowize.js",
+  "main": "index.js",
   "scripts": {
     "test": "mocha -r tests/setup tests"
   },
-  "author": "",
-  "license": "ISC",
+  "author": "Edward Faulkner <ef@alum.mit.edu>",
+  "repo": "https://github.com/ef4/nextify",
+  "license": "MIT",
   "devDependencies": {
     "babel": "^5.4.7",
     "chai": "^2.3.0",
