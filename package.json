@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "mocha -r tests/setup tests/**/*-tests.js"
+    "test": "mocha -r tests/setup --inline-diffs tests/**/*-tests.js"
   },
   "author": "Edward Faulkner <ef@alum.mit.edu>",
   "repo": "https://github.com/ef4/nextify",

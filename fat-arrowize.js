@@ -30,9 +30,7 @@
 */
 module.exports = function (babel) {
   var t = babel.types;
-
-  var rewriting = 0;
-  var doubleDanger = 0;
+  var stack = [];
 
   // Try to convert a single return statement to an expression.
   function maybeJustExpression(innerFunc) {
@@ -60,55 +58,63 @@ module.exports = function (babel) {
   return new babel.Transformer('fat-arrowize', {
     CallExpression: {
       enter: function (node) {
-
-        if (isThisIIFE(node) &&
-            localThis(node) === '_this' &&
-            node.callee.body.body.length === 1 &&
-            node.callee.body.body[0].type === 'ReturnStatement' &&
-            node.callee.body.body[0].argument.type === 'FunctionExpression'
-           ) {
-             var innerFunc = node.callee.body.body[0].argument;
-             node._custom_stuff = {
-               params: innerFunc.params,
-               innerBody: maybeJustExpression(innerFunc)
-             };
-             rewriting++;
-           }
-        return node;
+        if (isThisIIFE(node)) {
+          stack.unshift({
+            node,
+            localThis: localThis(node),
+            needsRealThis: false,
+            localThisNodes: [],
+            ownFunctionExpression: node.callee,
+            ownThisExpression: node.arguments[0]
+          });
+        }
       },
       exit: function (node) {
-        if (node._custom_stuff) {
-          rewriting--;
-          return t.arrowFunctionExpression(node._custom_stuff.params, node._custom_stuff.innerBody);
+        if (stack[0] && stack[0].node === node) {
+          var state = stack.shift();
+          if (!state.needsRealThis) {
+            for (var localThisNode of state.localThisNodes) {
+              localThisNode.replaceWith(t.thisExpression());
+            }
+
+            let callee = maybeJustExpression(node.callee);
+            if (t.isExpression(callee)) {
+              return callee;
+            }
+            return t.callExpression(t.arrowFunctionExpression([], callee), []);
+          }
         }
       }
     },
     Identifier: function (node) {
-      if (rewriting && node.name === '_this') {
-        var newNode = t.thisExpression();
-        newNode._was_underscore_this = true;
-        return newNode;
-      }
-      if (rewriting && node.name === 'arguments') {
-        return t.identifier('INVALID_ARGUMENTS');
+      for (var state of stack) {
+        if (node.name === state.localThis) {
+          state.localThisNodes.push(this);
+        }
       }
     },
     FunctionExpression: {
-      enter: function () {
-        if (rewriting) {
-          doubleDanger++;
+      enter: function(node) {
+        if (stack[0] && stack[0].ownFunctionExpression === node) {
+          return;
         }
+        stack.unshift({
+          node,
+          needsRealThis: false
+        });
       },
-      exit: function (node) {
-        if (rewriting) {
-          doubleDanger--;
-          return t.arrowFunctionExpression(node.params, maybeJustExpression(node));
+      exit: function(node) {
+        if (stack[0].node === node) {
+          var state = stack.shift();
+          if (!state.needsRealThis) {
+            return t.arrowFunctionExpression(node.params, maybeJustExpression(node));
+          }
         }
       }
     },
-    ThisExpression: function (node) {
-      if (doubleDanger && !node._was_underscore_this) {
-        return t.identifier('INVALID_THIS');
+    ThisExpression: function(node) {
+      if (stack[0] && stack[0].ownThisExpression !== node) {
+        stack[0].needsRealThis = true;
       }
     }
   });

@@ -47,13 +47,16 @@ export function loadTestCases(filename) {
   var lines = fs.readFileSync(filename, 'utf8').split("\n");
   var current;
   var output = [];
+  var counter = 0;
   for (var line of lines) {
+    counter++;
     if (/^\s*\/\/\s*from/.test(line)) {
       if (current) {
         output.push(current);
       }
       current = {
-        from: []
+        from: [],
+        lineNum: counter
       };
     } else if (/^\s*\/\/\s*to/.test(line) && current) {
       current.to = [];
@@ -71,6 +74,19 @@ export function loadTestCases(filename) {
   }
   return output.map(testCase => ({
     from: testCase.from.join("\n"),
-    to: testCase.to.join("\n")
+    to: testCase.to.join("\n"),
+    lineNum: testCase.lineNum
   }));
+}
+
+export function runTestCasesFile(transformer, filename) {
+  var testCases = loadTestCases(filename);
+
+  describe(`Test case from ${filename}`, function () {
+    for (let {from, to, lineNum} of testCases) {
+      it(`line ${lineNum}`, () => {
+        expect(convert(transformer, from).trim()).to.equal(to.trim());
+      });
+    }
+  });
 }
