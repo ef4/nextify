@@ -105,6 +105,36 @@ foo.map(elt => this.go(elt));
 }();
 
 
+// from
+(function (_this) {
+  this.go();
+  return function(a) {
+    return _this.do(a);
+  };
+})(this);
+// to
+(function (_this) {
+  this.go();
+  return a => _this.do(a);
+})(this);
+
+
+// from
+(function (_this) {
+  this.go();
+  return function (a) {
+    return this.do(a);
+  };
+})(this);
+// to
+(function (_this) {
+  this.go();
+  return function (a) {
+    return this.do(a);
+  };
+})(this);
+
+
 // end
 
 /* jshint ignore:end */
