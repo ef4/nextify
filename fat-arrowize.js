@@ -63,19 +63,14 @@ module.exports = function (babel) {
             node,
             localThis: localThis(node),
             sharesLocalThis: [],
-            needsRealThis: false,
-            localThisNodes: [],
-            ownThisExpression: node.arguments[0]
+            localThisNodes: []
           });
         }
       },
       exit: function (node) {
         if (stack[0] && stack[0].node === node) {
           var state = stack.shift();
-          if (
-            !state.needsRealThis &&
-              state.sharesLocalThis.every(shared => !shared.needsRealThis)
-          ) {
+          if (state.sharesLocalThis.every(shared => !shared.needsRealThis)) {
             for (var localThisNode of state.localThisNodes) {
               localThisNode.replaceWith(t.thisExpression());
             }
@@ -115,8 +110,8 @@ module.exports = function (babel) {
         }
       }
     },
-    ThisExpression: function(node) {
-      if (stack[0] && stack[0].ownThisExpression !== node) {
+    ThisExpression: function() {
+      if (stack[0]) {
         stack[0].needsRealThis = true;
       }
     }
