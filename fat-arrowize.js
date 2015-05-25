@@ -62,6 +62,7 @@ module.exports = function (babel) {
           stack.unshift({
             node,
             localThis: localThis(node),
+            sharesLocalThis: [],
             needsRealThis: false,
             localThisNodes: [],
             ownFunctionExpression: node.callee,
@@ -72,7 +73,10 @@ module.exports = function (babel) {
       exit: function (node) {
         if (stack[0] && stack[0].node === node) {
           var state = stack.shift();
-          if (!state.needsRealThis) {
+          if (
+            !state.needsRealThis &&
+              state.sharesLocalThis.every(shared => !shared.needsRealThis)
+          ) {
             for (var localThisNode of state.localThisNodes) {
               localThisNode.replaceWith(t.thisExpression());
             }
@@ -90,6 +94,9 @@ module.exports = function (babel) {
       for (var state of stack) {
         if (node.name === state.localThis) {
           state.localThisNodes.push(this);
+          if (stack[0].node !== state.node) {
+            state.sharesLocalThis.push(stack[0]);
+          }
         }
       }
     },

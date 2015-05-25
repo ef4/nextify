@@ -89,9 +89,9 @@ foo.map(
 
 // to
 foo.map(elt => this.go(elt));
+// end
 
-
-// from
+// from:
 (function(_this) {
   _this.go();
   return function(a) {
@@ -131,6 +131,38 @@ foo.map(elt => this.go(elt));
   this.go();
   return function (a) {
     return this.do(a);
+  };
+})(this);
+
+
+// from
+(function (_this) {
+  _this.go();
+  return function (a) {
+    return this.do(a);
+  };
+})(this);
+// to
+() => {
+  this.go();
+  return function (a) {
+    return this.do(a);
+  };
+}();
+
+
+// from
+(function (_this) {
+  _this.go();
+  return function (a) {
+    return this.do(a) + _this.do(b);
+  };
+})(this);
+// to
+(function (_this) {
+  _this.go();
+  return function (a) {
+    return this.do(a) + _this.do(b);
   };
 })(this);
 
