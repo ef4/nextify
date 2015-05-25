@@ -180,6 +180,20 @@ class X {
   }
 }
 
+
+// from
+var x = {
+  model(a){
+    return 42;
+  }
+};
+// to
+var x = {
+  model(a) {
+    return 42;
+  }
+};
+
 // end
 
 /* jshint ignore:end */

@@ -104,7 +104,7 @@ module.exports = function (babel) {
       exit: function(node, parent) {
         if (stack[0].node === node) {
           var state = stack.shift();
-          if (!state.needsRealThis && !t.isMethodDefinition(parent)) {
+          if (!state.needsRealThis && !t.isMethodDefinition(parent) && !t.isProperty(parent)) {
             return t.arrowFunctionExpression(node.params, maybeJustExpression(node));
           }
         }
