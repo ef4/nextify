@@ -1,0 +1,23 @@
+#!/usr/bin/env node
+
+require('babel/register');
+var babel = require('babel');
+var fs = require('fs');
+
+function transform(source) {
+  return babel.transform(source, {
+    plugins: [
+      require('../derequire'),
+      require('../fat-arrowize')
+    ],
+
+    // FIXME: babel doesn't accept an empty whitelist to disable all built-in
+    // transforms, so for now I'm just picking one that will be
+    // harmless for my use cases.
+    whitelist: ['react']
+  }).code;
+}
+
+var filename = process.argv[2];
+var data = fs.readFileSync(filename, 'utf8');
+fs.writeFileSync(filename, transform(data));
