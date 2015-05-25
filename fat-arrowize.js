@@ -18,15 +18,28 @@ module.exports = function (babel) {
     }
   }
 
+  // Test for immediately invoked function whose sole argument is
+  // `this`.
+  function isThisIIFE(node) {
+    return t.isFunctionExpression(node.callee) &&
+      node.arguments.length === 1 &&
+      t.isThisExpression(node.arguments[0]) &&
+      node.callee.params.length === 1 &&
+      t.isIdentifier(node.callee.params[0]);
+  }
+
+  // Given `isThisIIFE(node)===true`, return the name of the local
+  // variable that binds `this`.
+  function localThis(node) {
+    return node.callee.params[0].name;
+  }
+
   return new babel.Transformer('fat-arrowize', {
     CallExpression: {
       enter: function (node) {
-        if (node.callee.type === 'FunctionExpression' &&
-            node.arguments.length === 1 &&
-            node.arguments[0].type === 'ThisExpression' &&
-            node.callee.params.length === 1 &&
-            node.callee.params[0].type === 'Identifier' &&
-            node.callee.params[0].name === '_this' &&
+
+        if (isThisIIFE(node) &&
+            localThis(node) === '_this' &&
             node.callee.body.body.length === 1 &&
             node.callee.body.body[0].type === 'ReturnStatement' &&
             node.callee.body.body[0].argument.type === 'FunctionExpression'
