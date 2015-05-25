@@ -101,10 +101,10 @@ module.exports = function (babel) {
           needsRealThis: false
         });
       },
-      exit: function(node) {
+      exit: function(node, parent) {
         if (stack[0].node === node) {
           var state = stack.shift();
-          if (!state.needsRealThis) {
+          if (!state.needsRealThis && !t.isMethodDefinition(parent)) {
             return t.arrowFunctionExpression(node.params, maybeJustExpression(node));
           }
         }

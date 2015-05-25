@@ -167,6 +167,19 @@ _this => {
 }(this);
 
 
+// from
+class X {
+  model(a){
+    return 42;
+  }
+}
+// to
+class X {
+  model(a) {
+    return 42;
+  }
+}
+
 // end
 
 /* jshint ignore:end */
