@@ -159,12 +159,12 @@ foo.map(elt => this.go(elt));
   };
 })(this);
 // to
-(function (_this) {
+_this => {
   _this.go();
   return function (a) {
     return this.do(a) + _this.do(b);
   };
-})(this);
+}(this);
 
 
 // end

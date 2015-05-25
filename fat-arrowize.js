@@ -65,7 +65,6 @@ module.exports = function (babel) {
             sharesLocalThis: [],
             needsRealThis: false,
             localThisNodes: [],
-            ownFunctionExpression: node.callee,
             ownThisExpression: node.arguments[0]
           });
         }
@@ -102,9 +101,6 @@ module.exports = function (babel) {
     },
     FunctionExpression: {
       enter: function(node) {
-        if (stack[0] && stack[0].ownFunctionExpression === node) {
-          return;
-        }
         stack.unshift({
           node,
           needsRealThis: false
