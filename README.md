@@ -10,6 +10,10 @@ For example, we can turn CoffeeScript into ES6 by first compilng it
 with our usual coffescript compiler, and then running it through these
 transforms to opportunistically clean up the resulting messes.
 
+# Using them
+
+**These are still experimental, good luck.**
+
 # Transformations
 
 ## Fat-Arrowize
@@ -46,3 +50,7 @@ which we can automatically convert to:
 myList.map(elt => this.handle(elt));
 ```
 
+## Spreadify
+
+Turns `a.b.apply(a, c)` into `a.b(...c)`, *which is not always
+safe*. So you'll want to manually review this one.
