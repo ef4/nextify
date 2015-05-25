@@ -1,8 +1,32 @@
 /*
- Next step here is to detect whether each inner function actually uses
- "_this" vs "this". If they only use "_this" we should rewrite them as
- arrows. If they only use "this" they should keep their context. If
- they use both we should punt on rewriting anything at all.
+
+ Strategy:
+
+   1. Identifier a scope where `this` has been bound to a local
+   variable. Initially I'm just matching (function(_this){
+   ... }(this)), but eventually we could also match `var self =
+   this;...` if we can also assert that there are not other
+   assignments to `self`.
+
+   2. Check the whole scope to make sure it never uses the real
+   `this`, so that we can safely rebind it. Bail out otherwise.
+
+   3. When we enter an inner function expression, start testing to see
+   if it mentions `this` and if it mentions our local-this-var.
+
+     - if it mentions both, we have to bail on the whole transformation.
+
+     - if it just mentions `this`, we leave it alone but keep working
+       on the rest of the transformation.
+
+     - otherwise, we can rewrite it to an arrow function and any use
+       of local-this-var rewrites to `this`.
+
+   4. Rewrite the local variable to `this`.
+
+   5. Remove the outer scope (or local variable declaration).
+
+
 */
 module.exports = function (babel) {
   var t = babel.types;
@@ -10,6 +34,7 @@ module.exports = function (babel) {
   var rewriting = 0;
   var doubleDanger = 0;
 
+  // Try to convert a single return statement to an expression.
   function maybeJustExpression(innerFunc) {
     if (innerFunc.body.body.length === 1 && innerFunc.body.body[0].type === 'ReturnStatement') {
       return innerFunc.body.body[0].argument;
@@ -18,8 +43,7 @@ module.exports = function (babel) {
     }
   }
 
-  // Test for immediately invoked function whose sole argument is
-  // `this`.
+  // Test for `(function(x) { ... })(this)`
   function isThisIIFE(node) {
     return t.isFunctionExpression(node.callee) &&
       node.arguments.length === 1 &&
@@ -28,8 +52,7 @@ module.exports = function (babel) {
       t.isIdentifier(node.callee.params[0]);
   }
 
-  // Given `isThisIIFE(node)===true`, return the name of the local
-  // variable that binds `this`.
+  // Given `(function(x) { ... })(this)`, returns 'x'.
   function localThis(node) {
     return node.callee.params[0].name;
   }
