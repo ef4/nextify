@@ -1,15 +1,8 @@
 /*
- I didn't see an easy way to disable all of babel's built in
- transforms, so I just whitelisted one I'm not using:
-
-   babel --plugins fat-arrowize --whitelist "react" app --out-dir app2
-   rsync -r app2/ app
-
  Next step here is to detect whether each inner function actually uses
  "_this" vs "this". If they only use "_this" we should rewrite them as
  arrows. If they only use "this" they should keep their context. If
  they use both we should punt on rewriting anything at all.
-
 */
 module.exports = function (babel) {
   var t = babel.types;
@@ -28,7 +21,6 @@ module.exports = function (babel) {
   return new babel.Transformer('fat-arrowize', {
     CallExpression: {
       enter: function (node) {
-        debugger;
         if (node.callee.type === 'FunctionExpression' &&
             node.arguments.length === 1 &&
             node.arguments[0].type === 'ThisExpression' &&

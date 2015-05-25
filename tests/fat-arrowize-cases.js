@@ -8,6 +8,20 @@ a => this.foo(a);
 
 
 // from
+(function(_this){ return function(a,b){ return _this.foo(a+b); }})(this)
+
+// to
+(a, b) => this.foo(a + b);
+
+
+// from
+(function(_this){ return function(){ return _this.foo(); }})(this)
+
+// to
+() => this.foo();
+
+
+// from
 (function(_this){
   return function(a){
     var b = a + 1;
